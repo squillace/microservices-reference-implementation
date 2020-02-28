@@ -1,0 +1,144 @@
+# This is the configuration for Porter
+# You must define steps for each action, but the rest is optional
+# See https://porter.sh/author-bundles for documentation on how to configure your bundle
+# Uncomment out the sections below to take full advantage of what Porter can do!
+
+name: microservices-reference-infra-basic
+version: 0.1.0
+description: "A bundle to deliver the basic infrastructure portion of the Microsoft Patterns & Practices Microservices Reference Implementation located at https://github.com/mspnp/microservices-reference-implementation . Full documentation for this implementation can be read at https://docs.microsoft.com/azure/architecture/microservices/."
+
+invocationImage: squillace/mspnp-infra-install:v0.1.0
+tag: squillace/mspnp-infra:v0.1.0
+
+# Uncomment the line below to use a template Dockerfile for your invocation image
+dockerfile: Dockerfile.tmpl
+
+mixins:
+  - exec
+  - helm
+  - az
+  - kubernetes
+
+
+install:
+#  - exec:
+#      description: "Install the Microsoft P&P microservices reference implementaion."
+#      command: bash
+#      flags:
+#        c: env && cat /root/.ssh/id_rsa.pub
+  - exec: 
+      description: "Logging in to Azure..."
+      command: "bash"
+      flags:
+        c: az login --service-principal --username "{{ bundle.credentials.SP_APP_ID}}" --password "{{ bundle.credentials.SP_CLIENT_SECRET}}" --tenant "{{ bundle.credentials.TENANT_ID}}" >> /dev/null
+  - exec:
+      command: "bash"
+      description: "Creating the resource groups...."
+      flags:
+        c: az group create -n "{{bundle.parameters.RESOURCE_GROUP}}" -l "{{bundle.parameters.LOCATION}}"
+  - exec: 
+      description: "Azure group deployment"
+      command: "az"
+      arguments: 
+        - "deployment"
+        - "create" 
+        - "--name"
+        - "azuredeploy-prereqs-dev"
+        - "--location"
+        - "{{bundle.parameters.LOCATION}}"
+        - "--template-file"
+        - "./azuredeploy-prereqs.json"
+        - "--parameters"
+        - "resourceGroupName={{bundle.parameters.RESOURCE_GROUP}}"
+        - "resourceGroupLocation={{bundle.parameters.LOCATION}}"
+
+
+upgrade:
+  - exec:
+      description: "World 2.0"
+      command: bash
+      flags:
+        c: echo World 2.0
+
+uninstall:
+  - exec: 
+      description: "Logging in to Azure..."
+      command: "bash"
+      flags:
+        c: az login --service-principal --username "{{ bundle.credentials.SP_APP_ID}}" --password "{{ bundle.credentials.SP_CLIENT_SECRET}}" --tenant "{{ bundle.credentials.TENANT_ID}}" >> /dev/null
+  - exec: 
+      description: "Azure group deployment deletion"
+      command: "az"
+      arguments:
+        - "group" 
+        - "deployment"
+        - "delete" 
+        - "--name"
+        - "azuredeploy-prereqs-dev-identities"
+        - "--resource-group"
+        - "{{bundle.parameters.RESOURCE_GROUP}}"
+
+  - exec:
+      command: "bash"
+      description: "Deleting containing resource groups...."
+      flags:
+        c: az group deployment delete -n "{{bundle.parameters.RESOURCE_GROUP}}" --yes
+
+
+
+# See https://porter.sh/author-bundles/#dependencies
+#dependencies:
+#  mysql:
+#    tag: getporter/mysql:v0.1.1
+#    parameters:
+#      database-name: wordpress
+
+# See https://porter.sh/wiring/#credentials
+
+parameters:
+  - name: LOCATION
+    type: string
+    description: "The region into which it will be deployed."
+    default: westus2
+  - name: RESOURCE_GROUP
+    type: string
+    description: "The resource group that will control the resources."
+    default: mspnp-ref-impl
+#  - name: AZURE_DEPLOYMENT_NAME
+#    type: string
+#    description: "The name of the deployment."
+#    default: 
+#    applyTo:
+#      - uninstall
+    
+
+
+
+credentials:
+#  - name: kubeconfig
+#    path: /root/.kube/config
+  - name: SSH_PUBLIC_KEY_FILE
+    type: file
+    path: /root/.ssh/id_rsa.pub
+  - name: SUBSCRIPTION_ID
+    env: SUBSCRIPTION_ID
+    description: "The Azure subscription in which to create the shadow resources for the deployment."
+  - name: SUBSCRIPTION_NAME
+    description: "The name of the Azure subscription."
+    env: SUBSCRIPTION_NAME
+  - name: SP_APP_ID
+    description: "The client id for the service principal used to automate the bundle's actions."
+    env: SP_APP_ID
+  - name: TENANT_ID
+    description: "The tenant identity in which the service principal resides."
+    env: TENANT_ID
+  - name: SP_CLIENT_SECRET
+    description: "The service principal password that is used to log into Azure inside the bundle."
+    env: SP_CLIENT_SECRET
+  - name: SP_OBJECT_ID
+    description: "The service principal object id used in subsequent calls."
+    env: SP_OBJECT_ID
+
+
+
+
