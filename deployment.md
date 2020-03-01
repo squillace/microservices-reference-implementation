@@ -100,6 +100,29 @@ until az ad sp show --id ${DRONESCHEDULER_ID_PRINCIPAL_ID} &> /dev/null ; do ech
 until az ad sp show --id ${WORKFLOW_ID_PRINCIPAL_ID} &> /dev/null ; do echo "Waiting for AAD propagation" && sleep 5; done
 until az ad sp show --id ${GATEWAY_CONTROLLER_ID_PRINCIPAL_ID} &> /dev/null ; do echo "Waiting for AAD propagation" && sleep 5; done
 
+DELETION:
+  - exec:
+      command: bash
+      description: "Deleting DELIVERY_ID_PRINCIPAL_ID service prinicipal...."
+      flags:
+        c: az ad sp delete --id ${DELIVERY_ID_PRINCIPAL_ID} &> /dev/null
+  - exec:
+      command: bash
+      description: "Deleting DRONESCHEDULER_ID_PRINCIPAL_ID service prinicipal...."
+      flags:
+        c: az ad sp delete --id ${DRONESCHEDULER_ID_PRINCIPAL_ID} &> /dev/null
+  - exec:
+      command: bash
+      description: "Deleting WORKFLOW_ID_PRINCIPAL_ID service prinicipal...."
+      flags:
+        c: az ad sp delete --id ${WORKFLOW_ID_PRINCIPAL_ID} &> /dev/null 
+  - exec:
+      command: bash
+      description: "Deleting GATEWAY_CONTROLLER_ID_PRINCIPAL_ID service prinicipal...."
+      flags:
+        c: az ad sp delete --id ${GATEWAY_CONTROLLER_ID_PRINCIPAL_ID} &> /dev/null 
+
+
 # Export the kubernetes cluster version
 export KUBERNETES_VERSION=$(az aks get-versions -l $LOCATION --query "orchestrators[?default!=null].orchestratorVersion" -o tsv)
 export SERVICETAGS_LOCATION=$(az account list-locations --query "[?name=='${LOCATION}'].displayName" -o tsv | sed 's/[[:space:]]//g')
@@ -123,10 +146,45 @@ az group deployment create -g $RESOURCE_GROUP --name $DEV_DEPLOYMENT_NAME --temp
             acrResourceGroupName=${RESOURCE_GROUP_ACR} \
             acrResourceGroupLocation=$LOCATION
 
+<<<<<<< HEAD
 export VNET_NAME=$(az group deployment show -g $RESOURCE_GROUP -n $DEV_DEPLOYMENT_NAME --query properties.outputs.aksVNetName.value -o tsv) && \
 export CLUSTER_SUBNET_NAME=$(az group deployment show -g $RESOURCE_GROUP -n $DEV_DEPLOYMENT_NAME --query properties.outputs.aksClusterSubnetName.value -o tsv) && \
 export CLUSTER_SUBNET_PREFIX=$(az group deployment show -g $RESOURCE_GROUP -n $DEV_DEPLOYMENT_NAME --query properties.outputs.aksClusterSubnetPrefix.value -o tsv) && \
 export CLUSTER_NAME=$(az group deployment show -g $RESOURCE_GROUP -n $DEV_DEPLOYMENT_NAME --query properties.outputs.aksClusterName.value -o tsv) && \
+=======
+  - exec:
+      command: "az"
+      description: "Deploying the cluster and microservices...."
+      arguments:
+        - group 
+        - deployment 
+        - create 
+        - "-g $RESOURCE_GROUP" 
+        - --name azuredeploy-dev 
+        - --template-file ./azuredeploy.json 
+        - --parameters 
+        - servicePrincipalClientId=${SP_APP_ID} 
+        - servicePrincipalClientSecret=${SP_CLIENT_SECRET} 
+        - servicePrincipalId=${SP_OBJECT_ID} 
+        - kubernetesVersion=${KUBERNETES_VERSION} 
+        - sshRSAPublicKey="$(cat ${SSH_PUBLIC_KEY_FILE})" 
+        - deliveryIdName=${DELIVERY_ID_NAME} 
+        - deliveryPrincipalId=${DELIVERY_ID_PRINCIPAL_ID} 
+        - droneSchedulerIdName=${DRONESCHEDULER_ID_NAME} 
+        - droneSchedulerPrincipalId=${DRONESCHEDULER_ID_PRINCIPAL_ID} 
+        - workflowIdName=${WORKFLOW_ID_NAME} 
+        - workflowPrincipalId=${WORKFLOW_ID_PRINCIPAL_ID} 
+        - appGatewayControllerIdName=${GATEWAY_CONTROLLER_ID_NAME} 
+        - appGatewayControllerPrincipalId=${GATEWAY_CONTROLLER_ID_PRINCIPAL_ID} 
+        - acrResourceGroupName=${RESOURCE_GROUP_ACR} 
+        - acrResourceGroupLocation=$LOCATION
+
+
+export VNET_NAME=$(az group deployment show -g $RESOURCE_GROUP -n azuredeploy-dev --query properties.outputs.aksVNetName.value -o tsv) && \
+export CLUSTER_SUBNET_NAME=$(az group deployment show -g $RESOURCE_GROUP -n azuredeploy-dev --query properties.outputs.aksClusterSubnetName.value -o tsv) && \
+export CLUSTER_SUBNET_PREFIX=$(az group deployment show -g $RESOURCE_GROUP -n azuredeploy-dev --query properties.outputs.aksClusterSubnetPrefix.value -o tsv) && \
+export CLUSTER_NAME=$(az group deployment show -g $RESOURCE_GROUP -n azuredeploy-dev --query properties.outputs.aksClusterName.value -o tsv) && \
+>>>>>>> adding changes
 export CLUSTER_SERVER=$(az aks show -n $CLUSTER_NAME -g $RESOURCE_GROUP --query fqdn -o tsv) && \
 export FIREWALL_PIP_NAME=$(az group deployment show -g $RESOURCE_GROUP -n $DEV_DEPLOYMENT_NAME --query properties.outputs.firewallPublicIpName.value -o tsv) && \
 export ACR_NAME=$(az group deployment show -g $RESOURCE_GROUP -n $DEV_DEPLOYMENT_NAME --query properties.outputs.acrName.value -o tsv) && \

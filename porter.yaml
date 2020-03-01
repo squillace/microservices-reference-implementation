@@ -5,7 +5,7 @@
 
 name: microservices-reference-infra-basic
 version: 0.1.0
-description: "A bundle to deliver the basic infrastructure portion of the Microsoft Patterns & Practices Microservices Reference Implementation located at https://github.com/mspnp/microservices-reference-implementation . Full documentation for this implementation can be read at https://docs.microsoft.com/azure/architecture/microservices/."
+description: "A bundle to deliver the basic infrastructure portion of the Microsoft Patterns & Practices Microservices Reference Implementation located at https://github.com/mspnp/microservices-reference-implementation . Full documentation for this implementation can be read at https://docs.microsoft.com/azure/architecture/microservices/. "
 
 invocationImage: squillace/mspnp-infra-install:v0.1.0
 tag: squillace/mspnp-infra:v0.1.0
@@ -26,8 +26,9 @@ install:
 #      command: bash
 #      flags:
 #        c: env && cat /root/.ssh/id_rsa.pub
+
   - exec: 
-      description: "Logging in to Azure..."
+      description: "Logging in to Azure...."
       command: "bash"
       flags:
         c: az login --service-principal --username "{{ bundle.credentials.SP_APP_ID}}" --password "{{ bundle.credentials.SP_CLIENT_SECRET}}" --tenant "{{ bundle.credentials.TENANT_ID}}" >> /dev/null
@@ -51,6 +52,109 @@ install:
         - "--parameters"
         - "resourceGroupName={{bundle.parameters.RESOURCE_GROUP}}"
         - "resourceGroupLocation={{bundle.parameters.LOCATION}}"
+  - exec:
+      command: bash
+      description: "IDENTITIES_DEPLOYMENT_NAME"
+      flags:
+        c: az deployment show -n azuredeploy-prereqs-dev --query properties.outputs.identitiesDeploymentName.value -o tsv
+      outputs:
+        - name: IDENTITIES_DEPLOYMENT_NAME
+          regex: "(.*)"
+  - exec:
+      command: bash
+      description: "testing for a space"
+      flags:
+        c: echo \"{{bundle.outputs.IDENTITIES_DEPLOYMENT_NAME}}\"
+  - exec:
+      command: az
+      description: "DELIVERY_ID_NAME"
+      arguments:
+        - group
+        - deployment
+        - show
+      flags:
+        g: "{{bundle.parameters.RESOURCE_GROUP}}" 
+        n: "{{bundle.outputs.IDENTITIES_DEPLOYMENT_NAME}}" 
+        query: "properties.outputs.deliveryIdName.value"
+        o: tsv
+      outputs:
+        - name: DELIVERY_ID_NAME
+          regex: "(.*)"
+  - exec:
+      command: bash
+      description: "DELIVERY_ID_PRINCIPAL_ID"
+      flags:
+        c: az identity show -g {{bundle.parameters.RESOURCE_GROUP}} -n {{bundle.outputs.DELIVERY_ID_NAME}} --query principalId -o tsv
+      outputs:
+        - name: DELIVERY_ID_PRINCIPAL_ID
+          regex: "(.*)"
+  - exec:
+      command: bash
+      description: "DRONESCHEDULER_ID_NAME"
+      flags:
+        c: az group deployment show -g {{bundle.parameters.RESOURCE_GROUP}} -n {{bundle.outputs.IDENTITIES_DEPLOYMENT_NAME}} --query properties.outputs.droneSchedulerIdName.value -o tsv
+      outputs:
+        - name: DRONESCHEDULER_ID_NAME
+          regex: "(.*)"
+  - exec:
+      command: bash
+      description: "DRONESCHEDULER_ID_PRINCIPAL_ID"
+      flags:
+        c: az identity show -g {{bundle.parameters.RESOURCE_GROUP}} -n {{bundle.outputs.DRONESCHEDULER_ID_NAME}} --query principalId -o tsv
+      outputs:
+        - name: DRONESCHEDULER_ID_PRINCIPAL_ID
+          regex: "(.*)"
+  - exec:
+      command: bash
+      description: "WORKFLOW_ID_NAME"
+      flags:
+        c: az group deployment show -g {{bundle.parameters.RESOURCE_GROUP}} -n {{bundle.outputs.IDENTITIES_DEPLOYMENT_NAME}} --query properties.outputs.workflowIdName.value -o tsv
+      outputs:
+        - name: WORKFLOW_ID_NAME
+          regex: "(.*)"
+  - exec:
+      command: bash
+      description: "WORKFLOW_ID_PRINCIPAL_ID"
+      flags:
+        c: az identity show -g {{bundle.parameters.RESOURCE_GROUP}} -n {{bundle.outputs.WORKFLOW_ID_NAME}} --query principalId -o tsv
+      outputs:
+        - name: WORKFLOW_ID_PRINCIPAL_ID
+          regex: "(.*)"
+  - exec:
+      command: bash
+      description: "GATEWAY_CONTROLLER_ID_NAME"
+      flags:
+        c: az group deployment show -g {{bundle.parameters.RESOURCE_GROUP}} -n {{bundle.outputs.IDENTITIES_DEPLOYMENT_NAME}} --query properties.outputs.appGatewayControllerIdName.value -o tsv
+      outputs:
+        - name: GATEWAY_CONTROLLER_ID_NAME
+          regex: "(.*)"
+  - exec:
+      command: bash
+      description: "GATEWAY_CONTROLLER_ID_PRINCIPAL_ID"
+      flags:
+        c: az identity show -g {{bundle.parameters.RESOURCE_GROUP}} -n {{bundle.outputs.GATEWAY_CONTROLLER_ID_NAME}} --query principalId -o tsv
+      outputs:
+        - name: GATEWAY_CONTROLLER_ID_PRINCIPAL_ID
+          regex: "(.*)"
+  - exec:
+      command: bash
+      description: "RESOURCE_GROUP_ACR"
+      flags:
+        c: az group deployment show -g {{bundle.parameters.RESOURCE_GROUP}} -n {{bundle.outputs.IDENTITIES_DEPLOYMENT_NAME}} --query properties.outputs.acrResourceGroupName.value -o tsv
+      outputs:
+        - name: RESOURCE_GROUP_ACR
+          regex: "(.*)"
+  - exec:
+      command: bash
+      description: "testing it out"
+      flags:
+        c: az ad sp show --id {{bundle.outputs.DELIVERY_ID_PRINCIPAL_ID}}
+          
+  - exec:
+      command: bash
+      description: "Collecting and creating prerequisite values..."
+      arguments:
+        - collectingPrerequisiteValues.sh
 
 
 upgrade:
@@ -66,6 +170,55 @@ uninstall:
       command: "bash"
       flags:
         c: az login --service-principal --username "{{ bundle.credentials.SP_APP_ID}}" --password "{{ bundle.credentials.SP_CLIENT_SECRET}}" --tenant "{{ bundle.credentials.TENANT_ID}}" >> /dev/null
+  - exec:
+      command: bash
+      description: "Collecting and creating prerequisite values..."
+      arguments:
+        - collectingPrerequisiteValues.sh
+  - exec:
+      command: az
+      description: "Deleting DELIVERY_ID_PRINCIPAL_ID service prinicipal...."
+      arguments:
+        - ad 
+        - sp 
+        - delete 
+        - "--id ${DELIVERY_ID_PRINCIPAL_ID} &> /dev/null"
+  - exec:
+      command: az
+      description: "Deleting DRONESCHEDULER_ID_PRINCIPAL_ID service prinicipal...."
+      arguments:
+        - ad 
+        - sp 
+        - delete 
+        - "--id ${DRONESCHEDULER_ID_PRINCIPAL_ID} &> /dev/null"
+  - exec:
+      command: az
+      description: "Deleting WORKFLOW_ID_PRINCIPAL_ID service prinicipal...."
+      arguments:
+        - ad 
+        - sp 
+        - delete 
+        - "--id ${WORKFLOW_ID_PRINCIPAL_ID} &> /dev/null"
+  - exec:
+      command: az
+      description: "Deleting WORKFLOW_ID_PRINCIPAL_ID service prinicipal...."
+      arguments:
+        - ad 
+        - sp 
+        - delete 
+        - "--id ${WORKFLOW_ID_PRINCIPAL_ID} &> /dev/null"
+
+  - exec: 
+      description: "Azure group deployment deletion"
+      command: "az"
+      arguments:
+        - "group" 
+        - "deployment"
+        - "delete" 
+        - "--name"
+        - "azuredeploy-prereqs-dev-identities"
+        - "--resource-group"
+        - "{{bundle.parameters.RESOURCE_GROUP}}"
   - exec: 
       description: "Azure group deployment deletion"
       command: "az"
@@ -78,11 +231,13 @@ uninstall:
         - "--resource-group"
         - "{{bundle.parameters.RESOURCE_GROUP}}"
 
+
   - exec:
       command: "bash"
       description: "Deleting containing resource groups...."
       flags:
-        c: az group deployment delete -n "{{bundle.parameters.RESOURCE_GROUP}}" --yes
+        c: az group list --query "[?contains(name,'mspnp')].name" -o tsv | xargs -I {} az group delete -n {} --no-wait --yes
+
 
 
 
