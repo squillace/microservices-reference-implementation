@@ -5,10 +5,10 @@
 
 name: microservices-reference-infra-basic
 version: 0.1.0
-description: "A bundle to deliver the basic infrastructure portion of the Microsoft Patterns & Practices Microservices Reference Implementation located at https://github.com/mspnp/microservices-reference-implementation . Full documentation for this implementation can be read at https://docs.microsoft.com/azure/architecture/microservices/. "
+description: "A bundle to deliver the basic infrastructure portion of the Microsoft Patterns & Practices Microservices Reference Implementation located at https://github.com/mspnp/microservices-reference-implementation . Full documentation for this implementation can be read at https://docs.microsoft.com/azure/architecture/microservices/. This bundle installs the basic infrastructure to host the applications, but does not install the applications."
 
-invocationImage: squillace/mspnp-infra-install:v0.1.0
-tag: squillace/mspnp-infra:v0.1.0
+invocationImage: squillace/mspnp-infra-install:v0.2.0
+tag: squillace/mspnp-infra:v0.2.0
 
 # Uncomment the line below to use a template Dockerfile for your invocation image
 dockerfile: Dockerfile.tmpl
@@ -28,7 +28,7 @@ install:
 #        c: '"env && cat {{bundle.credentials.SSH_PUBLIC_KEY_FILE}}"'
   - exec:
       command: bash
-      description: "Deploying from the bash script...."
+      description: "Deploying the infrastructure portions of the reference implementation...."
       arguments:
         - collectingPrerequisiteValues.sh 
         - '"{{bundle.credentials.SSH_PUBLIC_KEY_FILE}}"'
@@ -45,44 +45,7 @@ uninstall:
       description: "Logging in to Azure..."
       command: "bash"
       flags:
-        c: az login --service-principal --username "{{ bundle.credentials.SP_APP_ID}}" --password "{{ bundle.credentials.SP_CLIENT_SECRET}}" --tenant "{{ bundle.credentials.TENANT_ID}}" >> /dev/null
-  - exec:
-      command: bash
-      description: "Collecting and creating prerequisite values..."
-      arguments:
-        - collectingPrerequisiteValues.sh
-  - exec:
-      command: az
-      description: "Deleting DELIVERY_ID_PRINCIPAL_ID service prinicipal...."
-      arguments:
-        - ad 
-        - sp 
-        - delete 
-        - "--id ${DELIVERY_ID_PRINCIPAL_ID} &> /dev/null"
-  - exec:
-      command: az
-      description: "Deleting DRONESCHEDULER_ID_PRINCIPAL_ID service prinicipal...."
-      arguments:
-        - ad 
-        - sp 
-        - delete 
-        - "--id ${DRONESCHEDULER_ID_PRINCIPAL_ID} &> /dev/null"
-  - exec:
-      command: az
-      description: "Deleting WORKFLOW_ID_PRINCIPAL_ID service prinicipal...."
-      arguments:
-        - ad 
-        - sp 
-        - delete 
-        - "--id ${WORKFLOW_ID_PRINCIPAL_ID} &> /dev/null"
-  - exec:
-      command: az
-      description: "Deleting WORKFLOW_ID_PRINCIPAL_ID service prinicipal...."
-      arguments:
-        - ad 
-        - sp 
-        - delete 
-        - "--id ${WORKFLOW_ID_PRINCIPAL_ID} &> /dev/null"
+        c: '"az login --service-principal --username {{ bundle.credentials.SP_APP_ID}} --password {{ bundle.credentials.SP_CLIENT_SECRET}} --tenant {{ bundle.credentials.TENANT_ID}} >> /dev/null"'
 
   - exec: 
       description: "Azure group deployment deletion"
@@ -95,6 +58,11 @@ uninstall:
         - "azuredeploy-firewall"
         - "--resource-group"
         - "{{bundle.parameters.RESOURCE_GROUP}}"
+  - exec:
+      command: bash
+      description: "exiting"
+      flags:
+        c: 'exit code 1'
   - exec: 
       description: "Azure group deployment deletion"
       command: "az"
@@ -123,7 +91,7 @@ uninstall:
       command: "bash"
       description: "Deleting containing resource groups...."
       flags:
-        c: az group list --query "[?contains(name,'mspnp')].name" -o tsv | xargs -I {} az group delete -n {} --no-wait --yes
+        c: '"az group list --query [?contains(name,`mspnp`)].name -o tsv | xargs -I {} az group delete -n {} --no-wait --yes"'
 
 
 
@@ -160,6 +128,7 @@ credentials:
 #  - name: kubeconfig
 #    path: /root/.kube/config
   - name: SSH_PUBLIC_KEY_FILE
+    description: "The path to the public key file (.pub) that you will use to create your cluster."
     type: file
     path: /root/.ssh/id_rsa.pub
   - name: SUBSCRIPTION_ID
@@ -169,7 +138,7 @@ credentials:
     description: "The name of the Azure subscription."
     env: SUBSCRIPTION_NAME
   - name: SP_APP_ID
-    description: "The client id for the service principal used to automate the bundle's actions."
+    description: "The client id that performs the bundle's actions. Remember that your tenant and sub may have restrictions on what you can create."
     env: SP_APP_ID
   - name: TENANT_ID
     description: "The tenant identity in which the service principal resides."
