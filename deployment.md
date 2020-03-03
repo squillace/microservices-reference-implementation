@@ -668,3 +668,45 @@ sed -i "s/- name: FLUENT_ELASTICSEARCH_PASSWORD/#- name: FLUENT_ELASTICSEARCH_PA
 sed -i 's/  value: "changeme"/#  value: "changeme"/' fluentd-daemonset-elasticsearch.yaml && \
 kubectl --namespace kube-system apply -f fluentd-daemonset-elasticsearch.yaml
 ```
+
+
+deletion:
+
+
+  - exec:
+      command: bash
+      description: "Collecting and creating prerequisite values..."
+      arguments:
+        - collectingPrerequisiteValues.sh
+  - exec:
+      command: az
+      description: "Deleting DELIVERY_ID_PRINCIPAL_ID service prinicipal...."
+      arguments:
+        - ad 
+        - sp 
+        - delete 
+        - "--id ${DELIVERY_ID_PRINCIPAL_ID} &> /dev/null"
+  - exec:
+      command: az
+      description: "Deleting DRONESCHEDULER_ID_PRINCIPAL_ID service prinicipal...."
+      arguments:
+        - ad 
+        - sp 
+        - delete 
+        - "--id ${DRONESCHEDULER_ID_PRINCIPAL_ID} &> /dev/null"
+  - exec:
+      command: az
+      description: "Deleting WORKFLOW_ID_PRINCIPAL_ID service prinicipal...."
+      arguments:
+        - ad 
+        - sp 
+        - delete 
+        - "--id ${WORKFLOW_ID_PRINCIPAL_ID} &> /dev/null"
+  - exec:
+      command: az
+      description: "Deleting WORKFLOW_ID_PRINCIPAL_ID service prinicipal...."
+      arguments:
+        - ad 
+        - sp 
+        - delete 
+        - "--id ${WORKFLOW_ID_PRINCIPAL_ID} &> /dev/null"
