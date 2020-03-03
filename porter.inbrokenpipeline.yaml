@@ -22,16 +22,131 @@ mixins:
 
 install:
 #  - exec:
-#      description: "Install the Microsoft P&P microservices reference implementation."
+#      description: "Install the Microsoft P&P microservices reference implementaion."
 #      command: bash
 #      flags:
-#        c: '"env && cat {{bundle.credentials.SSH_PUBLIC_KEY_FILE}}"'
+#        c: env && cat /root/.ssh/id_rsa.pub
+  - exec: 
+      description: "Logging in to Azure..."
+      command: "bash"
+      flags:
+        c: '"az login --service-principal --username {{ bundle.credentials.SP_APP_ID}} --password {{ bundle.credentials.SP_CLIENT_SECRET}} --tenant {{ bundle.credentials.TENANT_ID}} >> /dev/null"'
+  - exec:
+      command: "bash"
+      description: "Creating the resource groups...."
+      flags:
+        c: '"az group create -n {{bundle.parameters.RESOURCE_GROUP}} -l {{bundle.parameters.LOCATION}}"'
+  - exec: 
+      description: "Azure group deployment"
+      command: "az"
+      arguments: 
+        - "deployment"
+        - "create" 
+        - "--name"
+        - "azuredeploy-prereqs-dev"
+        - "--location"
+        - '{{bundle.parameters.LOCATION}}'
+        - "--template-file"
+        - "./azuredeploy-prereqs.json"
+        - "--parameters"
+        - 'resourceGroupName={{bundle.parameters.RESOURCE_GROUP}}'
+        - 'resourceGroupLocation={{bundle.parameters.LOCATION}}'
+        - "--query"
+        - "properties.outputs.identitiesDeploymentName.value"
+        - "-o" 
+        - "tsv"
+      outputs:
+        - name: IDENTITIES_DEPLOYMENT_NAME
+          regex: "(.*)"
   - exec:
       command: bash
-      description: "Deploying from the bash script...."
+      description: "testing for a space"
+      flags:
+        c: 'echo the output name is \"{{bundle.outputs.IDENTITIES_DEPLOYMENT_NAME}}\"; exit code 1'
+  - exec:
+      command: bash
+      description: "DELIVERY_ID_NAME"
+      flags:
+        c: '"az group deployment show -g: {{bundle.parameters.RESOURCE_GROUP}} -n {{bundle.outputs.IDENTITIES_DEPLOYMENT_NAME}}--query: properties.outputs.deliveryIdName.value -o: tsv"'
+      outputs:
+        - name: DELIVERY_ID_NAME
+          regex: "(.*)"
+  - exec:
+      command: bash
+      description: "DELIVERY_ID_PRINCIPAL_ID"
+      flags:
+        c: az identity show -g {{bundle.parameters.RESOURCE_GROUP}} -n {{bundle.outputs.DELIVERY_ID_NAME}} --query principalId -o tsv -fred
+      outputs:
+        - name: DELIVERY_ID_PRINCIPAL_ID
+          regex: "(.*)"
+  - exec:
+      command: bash
+      description: "DRONESCHEDULER_ID_NAME"
+      flags:
+        c: az group deployment show -g {{bundle.parameters.RESOURCE_GROUP}} -n {{bundle.outputs.IDENTITIES_DEPLOYMENT_NAME}} --query properties.outputs.droneSchedulerIdName.value -o tsv
+      outputs:
+        - name: DRONESCHEDULER_ID_NAME
+          regex: "(.*)"
+  - exec:
+      command: bash
+      description: "DRONESCHEDULER_ID_PRINCIPAL_ID"
+      flags:
+        c: az identity show -g {{bundle.parameters.RESOURCE_GROUP}} -n {{bundle.outputs.DRONESCHEDULER_ID_NAME}} --query principalId -o tsv
+      outputs:
+        - name: DRONESCHEDULER_ID_PRINCIPAL_ID
+          regex: "(.*)"
+  - exec:
+      command: bash
+      description: "WORKFLOW_ID_NAME"
+      flags:
+        c: az group deployment show -g {{bundle.parameters.RESOURCE_GROUP}} -n {{bundle.outputs.IDENTITIES_DEPLOYMENT_NAME}} --query properties.outputs.workflowIdName.value -o tsv
+      outputs:
+        - name: WORKFLOW_ID_NAME
+          regex: "(.*)"
+  - exec:
+      command: bash
+      description: "WORKFLOW_ID_PRINCIPAL_ID"
+      flags:
+        c: az identity show -g {{bundle.parameters.RESOURCE_GROUP}} -n {{bundle.outputs.WORKFLOW_ID_NAME}} --query principalId -o tsv
+      outputs:
+        - name: WORKFLOW_ID_PRINCIPAL_ID
+          regex: "(.*)"
+  - exec:
+      command: bash
+      description: "GATEWAY_CONTROLLER_ID_NAME"
+      flags:
+        c: az group deployment show -g {{bundle.parameters.RESOURCE_GROUP}} -n {{bundle.outputs.IDENTITIES_DEPLOYMENT_NAME}} --query properties.outputs.appGatewayControllerIdName.value -o tsv
+      outputs:
+        - name: GATEWAY_CONTROLLER_ID_NAME
+          regex: "(.*)"
+  - exec:
+      command: bash
+      description: "GATEWAY_CONTROLLER_ID_PRINCIPAL_ID"
+      flags:
+        c: az identity show -g {{bundle.parameters.RESOURCE_GROUP}} -n {{bundle.outputs.GATEWAY_CONTROLLER_ID_NAME}} --query principalId -o tsv
+      outputs:
+        - name: GATEWAY_CONTROLLER_ID_PRINCIPAL_ID
+          regex: "(.*)"
+  - exec:
+      command: bash
+      description: "RESOURCE_GROUP_ACR"
+      flags:
+        c: az group deployment show -g {{bundle.parameters.RESOURCE_GROUP}} -n {{bundle.outputs.IDENTITIES_DEPLOYMENT_NAME}} --query properties.outputs.acrResourceGroupName.value -o tsv
+      outputs:
+        - name: RESOURCE_GROUP_ACR
+          regex: "(.*)"
+  - exec:
+      command: bash
+      description: "testing it out"
+      flags:
+        c: az ad sp show --id {{bundle.outputs.DELIVERY_ID_PRINCIPAL_ID}}
+          
+  - exec:
+      command: bash
+      description: "Collecting and creating prerequisite values..."
       arguments:
-        - collectingPrerequisiteValues.sh 
-        - '"{{bundle.credentials.SSH_PUBLIC_KEY_FILE}}"'
+        - env #collectingPrerequisiteValues.sh
+
 
 upgrade:
   - exec:
