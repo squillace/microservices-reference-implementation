@@ -92,7 +92,18 @@ uninstall:
         - "deployment"
         - "delete" 
         - "--name"
-        - "azuredeploy-prereqs-dev-identities"
+        - "azuredeploy-firewall"
+        - "--resource-group"
+        - "{{bundle.parameters.RESOURCE_GROUP}}"
+  - exec: 
+      description: "Azure group deployment deletion"
+      command: "az"
+      arguments:
+        - "group" 
+        - "deployment"
+        - "delete" 
+        - "--name"
+        - "azuredeploy-dev"
         - "--resource-group"
         - "{{bundle.parameters.RESOURCE_GROUP}}"
   - exec: 
