@@ -1,5 +1,21 @@
 #!/bin/sh
 
+export SSH_PUBLIC_KEY_FILE=$1
+#echo "displaying the env vars....."
+#env
+
+
+az login --service-principal --username $SP_APP_ID --password $SP_CLIENT_SECRET --tenant $TENANT_ID >> /dev/null
+
+echo "Setting the proper subscription just in case..."
+az account set --subscription "squillace corp"
+
+az deployment create \
+   --name azuredeploy-prereqs-dev \
+   --location $LOCATION \
+   --template-file ${PROJECT_ROOT}/azuredeploy-prereqs.json \
+   --parameters resourceGroupName=$RESOURCE_GROUP \
+                resourceGroupLocation=$LOCATION
 
 echo "Acquiring deployment values to continue the installation...."
 export IDENTITIES_DEPLOYMENT_NAME=$(az deployment show -n azuredeploy-prereqs-dev --query properties.outputs.identitiesDeploymentName.value -o tsv) && \
@@ -15,14 +31,14 @@ export RESOURCE_GROUP_ACR=$(az group deployment show -g $RESOURCE_GROUP -n $IDEN
 
 echo "${DELIVERY_ID_PRINCIPAL_ID}, ${DRONESCHEDULER_ID_PRINCIPAL_ID}, ${WORKFLOW_ID_PRINCIPAL_ID}, ${GATEWAY_CONTROLLER_ID_PRINCIPAL_ID}"
 
-az account show -o table
+az account show --query "[].name" -o tsv
 
 # Wait for AAD propagation
-echo "Waiting for AAD identity propagation...."
-az ad sp show --id ${DELIVERY_ID_PRINCIPAL_ID} 
-az ad sp show --id ${DRONESCHEDULER_ID_PRINCIPAL_ID} 
-az ad sp show --id ${WORKFLOW_ID_PRINCIPAL_ID} 
-az ad sp show --id ${GATEWAY_CONTROLLER_ID_PRINCIPAL_ID} 
+#echo "Waiting for AAD identity propagation...."
+#az ad sp show --id ${DELIVERY_ID_PRINCIPAL_ID} 
+#az ad sp show --id ${DRONESCHEDULER_ID_PRINCIPAL_ID} 
+#az ad sp show --id ${WORKFLOW_ID_PRINCIPAL_ID} 
+#az ad sp show --id ${GATEWAY_CONTROLLER_ID_PRINCIPAL_ID} 
 
 # Wait for AAD propagation
 #echo "Waiting for AAD identity propagation...."
@@ -34,6 +50,8 @@ az ad sp show --id ${GATEWAY_CONTROLLER_ID_PRINCIPAL_ID}
 # Export the kubernetes cluster version
 export KUBERNETES_VERSION=$(az aks get-versions -l $LOCATION --query "orchestrators[?default!=null].orchestratorVersion" -o tsv)
 export SERVICETAGS_LOCATION=$(az account list-locations --query "[?name=='${LOCATION}'].displayName" -o tsv | sed 's/[[:space:]]//g')
+
+
 
 # Deploy cluster and microservices Azure services
 az group deployment create -g $RESOURCE_GROUP --name azuredeploy-dev --template-file ${PROJECT_ROOT}/azuredeploy.json \
@@ -77,8 +95,8 @@ az group deployment create -g $RESOURCE_GROUP --name azuredeploy-firewall --temp
 # Shared
 export GATEWAY_SUBNET_PREFIX=$(az group deployment show -g $RESOURCE_GROUP -n azuredeploy-dev --query properties.outputs.appGatewaySubnetPrefix.value -o tsv)
 
-#  Install kubectl
-sudo az aks install-cli
+#  Install kubectl no sudo in a container
+az aks install-cli
 
 # Get the Kubernetes cluster credentials
 az aks get-credentials --resource-group=$RESOURCE_GROUP --name=$CLUSTER_NAME
