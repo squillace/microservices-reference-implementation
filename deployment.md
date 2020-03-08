@@ -333,6 +333,7 @@ Build and publish the container image
 
 ```bash
 # Build the Docker image
+
 docker build --pull --compress -t $ACR_SERVER/delivery:0.1.0 $DELIVERY_PATH/.
 
 # Push the image to ACR

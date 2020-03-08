@@ -4,28 +4,22 @@
 # Uncomment out the sections below to take full advantage of what Porter can do!
 
 name: microservices-reference-infra-basic
-version: 0.1.0
+version: 0.2.5
 description: "A bundle to deliver the basic infrastructure portion of the Microsoft Patterns & Practices Microservices Reference Implementation located at https://github.com/mspnp/microservices-reference-implementation . Full documentation for this implementation can be read at https://docs.microsoft.com/azure/architecture/microservices/. This bundle installs the basic infrastructure to host the applications, but does not install the applications."
 
-invocationImage: squillace/mspnp-infra-install:v0.2.0
-tag: squillace/mspnp-infra:v0.2.0
+invocationImage: squillace/mspnp-infra-install:v0.2.5
+tag: squillace/mspnp-infra:v0.2.5
 
 # Uncomment the line below to use a template Dockerfile for your invocation image
 dockerfile: Dockerfile.tmpl
 
 mixins:
   - exec
-  - helm
   - az
   - kubernetes
 
 
 install:
-#  - exec:
-#      description: "Install the Microsoft P&P microservices reference implementation."
-#      command: bash
-#      flags:
-#        c: '"env && cat {{bundle.credentials.SSH_PUBLIC_KEY_FILE}}"'
   - exec:
       command: bash
       description: "Deploying the infrastructure portions of the reference implementation...."
@@ -58,11 +52,6 @@ uninstall:
         - "azuredeploy-firewall"
         - "--resource-group"
         - "{{bundle.parameters.RESOURCE_GROUP}}"
-  - exec:
-      command: bash
-      description: "exiting"
-      flags:
-        c: 'exit code 1'
   - exec: 
       description: "Azure group deployment deletion"
       command: "az"
@@ -87,11 +76,11 @@ uninstall:
         - "{{bundle.parameters.RESOURCE_GROUP}}"
 
 
-  - exec:
-      command: "bash"
-      description: "Deleting containing resource groups...."
-      flags:
-        c: '"az group list --query [?contains(name,`mspnp`)].name -o tsv | xargs -I {} az group delete -n {} --no-wait --yes"'
+#  - exec:
+#      command: "bash"
+#      description: "Deleting containing resource groups...."
+#      flags:
+#        c: '"az group list --query [?contains(name,`mspnp`)].name -o tsv | xargs -I {} az group delete -n {} --no-wait --yes"'
 
 
 
