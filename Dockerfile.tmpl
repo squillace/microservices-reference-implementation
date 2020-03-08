@@ -8,6 +8,11 @@ ENV PROJECT_ROOT=.
 ENV K8S=$PROJECT_ROOT/k8s
 ENV HELM_CHARTS=$PROJECT_ROOT/charts
 
+RUN apt-get update && apt-get install -y curl
+RUN curl -O https://get.helm.sh/helm-v2.14.2-linux-amd64.tar.gz
+RUN tar -xvf helm-v2.14.2-linux-amd64.tar.gz
+RUN mv linux-amd64/helm /usr/local/bin/helm
+
 # PORTER_MIXINS
 
 # This is a template Dockerfile for the bundle's invocation image

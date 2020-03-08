@@ -4,11 +4,11 @@
 # Uncomment out the sections below to take full advantage of what Porter can do!
 
 name: microservices-reference-infra-basic
-version: 0.2.5
+version: 0.2.7
 description: "A bundle to deliver the basic infrastructure portion of the Microsoft Patterns & Practices Microservices Reference Implementation located at https://github.com/mspnp/microservices-reference-implementation . Full documentation for this implementation can be read at https://docs.microsoft.com/azure/architecture/microservices/. This bundle installs the basic infrastructure to host the applications, but does not install the applications."
 
-invocationImage: squillace/mspnp-infra-install:v0.2.5
-tag: squillace/mspnp-infra:v0.2.5
+invocationImage: squillace/mspnp-infra-install:v0.2.7
+tag: squillace/mspnp-infra:v0.2.7
 
 # Uncomment the line below to use a template Dockerfile for your invocation image
 dockerfile: Dockerfile.tmpl
@@ -17,6 +17,20 @@ mixins:
   - exec
   - az
   - kubernetes
+
+customActions:
+  mspnp.install-app:
+    description: "Installs the application on the infrastructure release."
+    stateless: false
+    modifies: true 
+
+mspnp.install-app:
+  - exec:
+      command: bash
+      description: "Deploying the application onto the infrastructure reference implementation....."
+      arguments:
+        - actionInstallApp.sh 
+        - '"{{bundle.credentials.SSH_PUBLIC_KEY_FILE}}"'
 
 
 install:
@@ -27,12 +41,15 @@ install:
         - collectingPrerequisiteValues.sh 
         - '"{{bundle.credentials.SSH_PUBLIC_KEY_FILE}}"'
 
+
+
+
 upgrade:
   - exec:
       description: "World 2.0"
       command: bash
       flags:
-        c: echo World 2.0
+        c: echo "not yet implemented..."
 
 uninstall:
   - exec: 
