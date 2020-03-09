@@ -62,24 +62,6 @@ autoscaling:
   maxReplicas:
   minReplicas:
   targetCPUUtilizationPercentage:
-
-
-# Pod-to-pod traffic: east-west
-networkPolicy:
-  egress:
-    enabled: true
-    allowAll: false
-    external:
-      enabled: false
-      clusterSubnetPrefix:
-  ingress:
-    enabled: true
-    allowAll: false
-    externalSubnet:
-      enabled: false
-      subnetPrefix:
-
-
 service:
   targetPort: 80
   targetProtocol: TCP

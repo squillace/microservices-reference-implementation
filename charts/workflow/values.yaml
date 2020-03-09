@@ -88,18 +88,6 @@ autoscaling:
   maxReplicas:
   minReplicas:
   targetCPUUtilizationPercentage:
-
-
-# Pod-to-pod traffic: east-west
-networkPolicy:
-  egress:
-    enabled: true
-    allowAll: false
-    external:
-      enabled: false
-      clusterSubnetPrefix:
-
-# indicate pods this app will attemp to establish a connection with
 workflow:
   customPodLabels:
     dd.fabrikam.com/egress-delivery: "true"

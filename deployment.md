@@ -272,12 +272,6 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
 kubectl apply -f $K8S/k8s-resource-quotas-dev.yaml
 ```
 
-## Deny all ingress and egress traffic
-
-```bash
-kubectl apply -f $K8S/k8s-deny-all-non-whitelisted-traffic-dev.yaml
-```
-
 ## Deploy the Delivery service
 
 Extract resource details from deployment
@@ -328,10 +322,6 @@ helm install delivery-v0.1.0-dev delivery-v0.1.0.tgz \
      --set ingress.tls.secrets[0].name=$DELIVERY_INGRESS_TLS_SECRET_NAME \
      --set ingress.tls.secrets[0].key="$(cat ingestion-ingress-tls.key)" \
      --set ingress.tls.secrets[0].certificate="$(cat ingestion-ingress-tls.crt)" \
-     --set networkPolicy.egress.external.enabled=true \
-     --set networkPolicy.egress.external.clusterSubnetPrefix=$CLUSTER_SUBNET_PREFIX \
-     --set networkPolicy.ingress.externalSubnet.enabled=true \
-     --set networkPolicy.ingress.externalSubnet.subnetPrefix=$GATEWAY_SUBNET_PREFIX \
      --set identity.clientid=$DELIVERY_PRINCIPAL_CLIENT_ID \
      --set identity.resourceid=$DELIVERY_PRINCIPAL_RESOURCE_ID \
      --set cosmosdb.id=$DATABASE_NAME \
@@ -493,10 +483,6 @@ helm install ingestion-v0.1.0-dev ingestion-v0.1.0.tgz \
      --set ingress.tls.secrets[0].name=$INGRESS_TLS_SECRET_NAME \
      --set ingress.tls.secrets[0].key="$(cat ingestion-ingress-tls.key)" \
      --set ingress.tls.secrets[0].certificate="$(cat ingestion-ingress-tls.crt)" \
-     --set networkPolicy.egress.external.enabled=true \
-     --set networkPolicy.egress.external.clusterSubnetPrefix=$CLUSTER_SUBNET_PREFIX \
-     --set networkPolicy.ingress.externalSubnet.enabled=true \
-     --set networkPolicy.ingress.externalSubnet.subnetPrefix=$GATEWAY_SUBNET_PREFIX \
      --set secrets.appinsights.ikey=${AI_IKEY} \
      --set secrets.queue.keyname=IngestionServiceAccessKey \
      --set secrets.queue.keyvalue=${INGESTION_ACCESS_KEY_VALUE} \
