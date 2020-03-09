@@ -4,11 +4,11 @@
 # Uncomment out the sections below to take full advantage of what Porter can do!
 
 name: microservices-reference-infra-basic
-version: 0.2.9
+version: 0.2.10
 description: "A bundle to deliver the basic infrastructure portion of the Microsoft Patterns & Practices Microservices Reference Implementation located at https://github.com/mspnp/microservices-reference-implementation . Full documentation for this implementation can be read at https://docs.microsoft.com/azure/architecture/microservices/. This bundle installs the basic infrastructure to host the applications, but does not install the applications. NOTE: You may need more than Contributor scope on your Service Principal, but it depends upon your specific tenant and subscription permissions."
 
-invocationImage: squillace/mspnp-infra-install:v0.2.9
-tag: squillace/mspnp-infra:v0.2.9
+invocationImage: squillace/mspnp-infra-install:v0.2.10
+tag: squillace/mspnp-infra:v0.2.10
 
 # Uncomment the line below to use a template Dockerfile for your invocation image
 dockerfile: Dockerfile.tmpl
