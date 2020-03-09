@@ -229,7 +229,7 @@ Setup Helm
 
 ```bash
 # install helm client side
-DESIRED_VERSION=v2.14.2;curl -L https://git.io/get_helm.sh | bash
+curl -L https://git.io/get_helm.sh | bash -s -- --version v2.14.2
 
 # setup tiller in your cluster
 kubectl apply -f $K8S/tiller-rbac.yaml
@@ -306,12 +306,6 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
 kubectl apply -f $K8S/k8s-resource-quotas-dev.yaml
 ```
 
-## Deny all ingress and egress traffic
-
-```bash
-kubectl apply -f $K8S/k8s-deny-all-non-whitelisted-traffic-dev.yaml
-```
-
 ## Deploy the Delivery service
 
 Extract resource details from deployment
@@ -361,8 +355,6 @@ helm install $HELM_CHARTS/delivery/ \
      --set ingress.tls.secrets[0].name=$DELIVERY_INGRESS_TLS_SECRET_NAME \
      --set ingress.tls.secrets[0].key="$(cat ingestion-ingress-tls.key)" \
      --set ingress.tls.secrets[0].certificate="$(cat ingestion-ingress-tls.crt)" \
-     --set networkPolicy.ingress.customSelectors.argSelector={ipBlock} \
-     --set networkPolicy.ingress.customSelectors.argSelector[0].ipBlock.cidr=$GATEWAY_SUBNET_PREFIX \
      --set identity.clientid=$DELIVERY_PRINCIPAL_CLIENT_ID \
      --set identity.resourceid=$DELIVERY_PRINCIPAL_RESOURCE_ID \
      --set cosmosdb.id=$DATABASE_NAME \
@@ -523,8 +515,6 @@ helm install $HELM_CHARTS/ingestion/ \
      --set ingress.tls.secrets[0].name=$INGRESS_TLS_SECRET_NAME \
      --set ingress.tls.secrets[0].key="$(cat ingestion-ingress-tls.key)" \
      --set ingress.tls.secrets[0].certificate="$(cat ingestion-ingress-tls.crt)" \
-     --set networkPolicy.ingress.customSelectors.argSelector={ipBlock} \
-     --set networkPolicy.ingress.customSelectors.argSelector[0].ipBlock.cidr=$GATEWAY_SUBNET_PREFIX \
      --set secrets.appinsights.ikey=${AI_IKEY} \
      --set secrets.queue.keyname=IngestionServiceAccessKey \
      --set secrets.queue.keyvalue=${INGESTION_ACCESS_KEY_VALUE} \
