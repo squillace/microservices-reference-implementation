@@ -291,7 +291,7 @@ echo "tag=$ACR_SERVER/dronescheduler:0.1.0"
 result=$(az acr repository show -n byem2kjldx646 --repository dronescheduler --query '[registry, imageName]' -o tsv)
 if [[ "$result" = "" ]]; then
     #az acr build -t byem2kjldx646.azurecr.io/dronescheduler:0.1.0 -r byem2kjldx646 .. -f ./Dockerfile
-    az acr build -t $ACR_SERVER/dronescheduler:0.1.0 -r $ACR_NAME $DRONE_PATH/../ -f ./Dockerfile
+    az acr build -t $ACR_SERVER/dronescheduler:0.1.0 -r $ACR_NAME $DRONE_PATH/../ -f $DRONE_PATH/Dockerfile
 else
     echo "Found the image for droneschedule, moving to deploy...."
 fi
@@ -330,23 +330,4 @@ echo "Validating the application is running...."
 
 #Since the certificate used for TLS is self-signed, the request disables TLS validation using the '-k' option.
 
-curl -X POST "https://$EXTERNAL_INGEST_FQDN/api/deliveryrequests" --header 'Content-Type: application/json' --header 'Accept: application/json' -k -i -d '{
-   "confirmationRequired": "None",
-   "deadline": "",
-   "deliveryId": "mydelivery",
-   "dropOffLocation": "drop off",
-   "expedited": true,
-   "ownerId": "myowner",
-   "packageInfo": {
-     "packageId": "mypackage",
-     "size": "Small",
-     "tag": "mytag",
-     "weight": 10
-   },
-   "pickupLocation": "my pickup",
-   "pickupTime": "2019-05-08T20:00:00.000Z"
- }'
-
-echo  "Check the request status...."
-
-curl "https://$EXTERNAL_INGEST_FQDN/api/deliveries/mydelivery" --header 'Accept: application/json' -k -i
+echo "$EXTERNAL_INGEST_FQDN" >> FQDN.txt

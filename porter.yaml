@@ -4,11 +4,11 @@
 # Uncomment out the sections below to take full advantage of what Porter can do!
 
 name: microservices-reference-infra-basic
-version: 0.2.7
-description: "A bundle to deliver the basic infrastructure portion of the Microsoft Patterns & Practices Microservices Reference Implementation located at https://github.com/mspnp/microservices-reference-implementation . Full documentation for this implementation can be read at https://docs.microsoft.com/azure/architecture/microservices/. This bundle installs the basic infrastructure to host the applications, but does not install the applications."
+version: 0.2.9
+description: "A bundle to deliver the basic infrastructure portion of the Microsoft Patterns & Practices Microservices Reference Implementation located at https://github.com/mspnp/microservices-reference-implementation . Full documentation for this implementation can be read at https://docs.microsoft.com/azure/architecture/microservices/. This bundle installs the basic infrastructure to host the applications, but does not install the applications. NOTE: You may need more than Contributor scope on your Service Principal, but it depends upon your specific tenant and subscription permissions."
 
-invocationImage: squillace/mspnp-infra-install:v0.2.7
-tag: squillace/mspnp-infra:v0.2.7
+invocationImage: squillace/mspnp-infra-install:v0.2.9
+tag: squillace/mspnp-infra:v0.2.9
 
 # Uncomment the line below to use a template Dockerfile for your invocation image
 dockerfile: Dockerfile.tmpl
@@ -23,6 +23,19 @@ customActions:
     description: "Installs the application on the infrastructure release."
     stateless: false
     modifies: true 
+  mnpnp.test-app:
+    description: "Tests the application; pass the FQDN from the output value of the instance to the --TEST_FQDN parameter."
+    stateless: yes
+    modifies: false
+
+outputs:
+  - name: EXTERNAL_ENDPOINT
+    type: string
+    description: "The FQDN of the application."
+    applyTo:
+      - mspnp.install-app
+      - mspnp.test-app
+
 
 mspnp.install-app:
   - exec:
@@ -31,18 +44,37 @@ mspnp.install-app:
       arguments:
         - actionInstallApp.sh 
         - '"{{bundle.credentials.SSH_PUBLIC_KEY_FILE}}"'
+  - exec:
+      command: "bash"
+      description: "Capturing the FQDN..."
+      flags:
+        c: '"az group deployment show -g $RESOURCE_GROUP -n azuredeploy-dev --query properties.outputs.appGatewayPublicIpFqdn.value -o tsv"'
+      outputs:
+        - name: EXTERNAL_ENDPOINT
+          regex: "(.*)"
 
-
+mspnp.test-app:
+  - exec:
+      command: bash
+      description: "Testing the application by calling the endpoints...."
+      arguments:
+        - test.sh 
+        - '"{{bundle.parameters.TEST_FQDN}}"'
+  - exec:
+      command: bash
+      description: "testing"
+      flags:
+        c: '"echo {{bundle.parameters.TEST_FQDN}}"'
+      outputs:
+        - name: EXTERNAL_ENDPOINT
+          regex: "(.*)"
 install:
   - exec:
       command: bash
-      description: "Deploying the infrastructure portions of the reference implementation...."
+      description: "Deploying the infrastructure portions of the reference implementation..."
       arguments:
         - collectingPrerequisiteValues.sh 
         - '"{{bundle.credentials.SSH_PUBLIC_KEY_FILE}}"'
-
-
-
 
 upgrade:
   - exec:
@@ -59,48 +91,25 @@ uninstall:
         c: '"az login --service-principal --username {{ bundle.credentials.SP_APP_ID}} --password {{ bundle.credentials.SP_CLIENT_SECRET}} --tenant {{ bundle.credentials.TENANT_ID}} >> /dev/null"'
 
   - exec: 
-      description: "Azure group deployment deletion"
+      description: "Azure resource group deployment deletion"
       command: "az"
       arguments:
         - "group" 
-        - "deployment"
         - "delete" 
         - "--name"
-        - "azuredeploy-firewall"
-        - "--resource-group"
         - "{{bundle.parameters.RESOURCE_GROUP}}"
+        - --no-wait
+        - --yes
   - exec: 
-      description: "Azure group deployment deletion"
+      description: "Azure resource group deployment deletion"
       command: "az"
       arguments:
         - "group" 
-        - "deployment"
         - "delete" 
         - "--name"
-        - "azuredeploy-dev"
-        - "--resource-group"
-        - "{{bundle.parameters.RESOURCE_GROUP}}"
-  - exec: 
-      description: "Azure group deployment deletion"
-      command: "az"
-      arguments:
-        - "group" 
-        - "deployment"
-        - "delete" 
-        - "--name"
-        - "azuredeploy-prereqs-dev-identities"
-        - "--resource-group"
-        - "{{bundle.parameters.RESOURCE_GROUP}}"
-
-
-#  - exec:
-#      command: "bash"
-#      description: "Deleting containing resource groups...."
-#      flags:
-#        c: '"az group list --query [?contains(name,`mspnp`)].name -o tsv | xargs -I {} az group delete -n {} --no-wait --yes"'
-
-
-
+        - "{{bundle.parameters.RESOURCE_GROUP}}-acr"
+        - --no-wait
+        - --yes
 
 # See https://porter.sh/author-bundles/#dependencies
 #dependencies:
@@ -120,15 +129,11 @@ parameters:
     type: string
     description: "The resource group that will control the resources."
     default: mspnp-ref-impl
-#  - name: AZURE_DEPLOYMENT_NAME
-#    type: string
-#    description: "The name of the deployment."
-#    default: 
-#    applyTo:
-#      - uninstall
-    
-
-
+  - name: TEST_FQDN
+    type: string
+    description: "The FQDN of the application."
+    applyTo:
+      - mspnp.test-app
 
 credentials:
 #  - name: kubeconfig
