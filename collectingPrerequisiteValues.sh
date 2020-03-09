@@ -34,10 +34,10 @@ export RESOURCE_GROUP_ACR=$(az group deployment show -g $RESOURCE_GROUP -n $IDEN
 
 # Wait for AAD propagation
 #echo "Waiting for AAD identity propagation...."
-#az ad sp show --id ${DELIVERY_ID_PRINCIPAL_ID} 
-#az ad sp show --id ${DRONESCHEDULER_ID_PRINCIPAL_ID} 
-#az ad sp show --id ${WORKFLOW_ID_PRINCIPAL_ID} 
-#az ad sp show --id ${GATEWAY_CONTROLLER_ID_PRINCIPAL_ID} 
+#az ad sp show --id ${DELIVERY_ID_PRINCIPAL_ID}
+#az ad sp show --id ${DRONESCHEDULER_ID_PRINCIPAL_ID}
+#az ad sp show --id ${WORKFLOW_ID_PRINCIPAL_ID}
+#az ad sp show --id ${GATEWAY_CONTROLLER_ID_PRINCIPAL_ID}
 
 # Wait for AAD propagation
 #echo "Waiting for AAD identity propagation...."
@@ -171,8 +171,3 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
     -subj "/CN=${APP_GATEWAY_PUBLIC_IP_FQDN}/O=fabrikam"
 
 kubectl apply -f $K8S/k8s-resource-quotas-dev.yaml
-
-## Deny all ingress and egress traffic
-
-kubectl apply -f $K8S/k8s-deny-all-non-whitelisted-traffic-dev.yaml
-
