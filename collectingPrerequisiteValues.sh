@@ -33,10 +33,10 @@ export RESOURCE_GROUP_ACR=$(az group deployment show -g $RESOURCE_GROUP -n $IDEN
 
 # Wait for AAD propagation
 #echo "Waiting for AAD identity propagation...."
-#az ad sp show --id ${DELIVERY_ID_PRINCIPAL_ID} 
-#az ad sp show --id ${DRONESCHEDULER_ID_PRINCIPAL_ID} 
-#az ad sp show --id ${WORKFLOW_ID_PRINCIPAL_ID} 
-#az ad sp show --id ${GATEWAY_CONTROLLER_ID_PRINCIPAL_ID} 
+#az ad sp show --id ${DELIVERY_ID_PRINCIPAL_ID}
+#az ad sp show --id ${DRONESCHEDULER_ID_PRINCIPAL_ID}
+#az ad sp show --id ${WORKFLOW_ID_PRINCIPAL_ID}
+#az ad sp show --id ${GATEWAY_CONTROLLER_ID_PRINCIPAL_ID}
 
 # Wait for AAD propagation
 #echo "Waiting for AAD identity propagation...."
@@ -46,7 +46,8 @@ export RESOURCE_GROUP_ACR=$(az group deployment show -g $RESOURCE_GROUP -n $IDEN
 #until az ad sp show --id ${GATEWAY_CONTROLLER_ID_PRINCIPAL_ID} &> /dev/null ; do echo "Waiting for GATEWAY_CONTROLLER_ID_PRINCIPAL_ID propagation" && sleep 5; done
 
 # Export the kubernetes cluster version
-export KUBERNETES_VERSION=$(az aks get-versions -l $LOCATION --query "orchestrators[?default!=null].orchestratorVersion" -o tsv)
+#export KUBERNETES_VERSION=$(az aks get-versions -l $LOCATION --query "orchestrators[?default!=null].orchestratorVersion" -o tsv)
+export KUBERNETES_VERSION=1.15.5
 export SERVICETAGS_LOCATION=$(az account list-locations --query "[?name=='${LOCATION}'].displayName" -o tsv | sed 's/[[:space:]]//g')
 
 
@@ -169,8 +170,3 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
     -subj "/CN=${APP_GATEWAY_PUBLIC_IP_FQDN}/O=fabrikam"
 
 kubectl apply -f $K8S/k8s-resource-quotas-dev.yaml
-
-## Deny all ingress and egress traffic
-
-kubectl apply -f $K8S/k8s-deny-all-non-whitelisted-traffic-dev.yaml
-
