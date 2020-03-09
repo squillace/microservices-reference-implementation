@@ -46,7 +46,8 @@ export RESOURCE_GROUP_ACR=$(az group deployment show -g $RESOURCE_GROUP -n $IDEN
 #until az ad sp show --id ${GATEWAY_CONTROLLER_ID_PRINCIPAL_ID} &> /dev/null ; do echo "Waiting for GATEWAY_CONTROLLER_ID_PRINCIPAL_ID propagation" && sleep 5; done
 
 # Export the kubernetes cluster version
-export KUBERNETES_VERSION=$(az aks get-versions -l $LOCATION --query "orchestrators[?default!=null].orchestratorVersion" -o tsv)
+#export KUBERNETES_VERSION=$(az aks get-versions -l $LOCATION --query "orchestrators[?default!=null].orchestratorVersion" -o tsv)
+export KUBERNETES_VERSION=1.15.5
 export SERVICETAGS_LOCATION=$(az account list-locations --query "[?name=='${LOCATION}'].displayName" -o tsv | sed 's/[[:space:]]//g')
 
 
