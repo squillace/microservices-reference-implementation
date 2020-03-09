@@ -10,8 +10,9 @@ az login --service-principal --username $SP_APP_ID --password $SP_CLIENT_SECRET 
 echo "Setting the proper subscription..."
 az account set --subscription $SUBSCRIPTION_ID
 
+az group create -l $LOCATION -n $RESOURCE_GROUP 
 
-echo "Deploying the indentiy prerequisites...."
+echo "Deploying the indentity prerequisites...."
 az deployment create \
    --name azuredeploy-prereqs-dev \
    --location $LOCATION \
