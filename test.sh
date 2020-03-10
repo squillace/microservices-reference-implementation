@@ -20,8 +20,8 @@ curl -X POST "https://$EXTERNAL_INGEST_FQDN/api/deliveryrequests" --header 'Cont
    "pickupTime": "2019-05-08T20:00:00.000Z"
  }' >> deliveryrequest.json
 
-echo  "Checking the request status...."
-
 DELIVERY_ID=$(cat deliveryrequest.json | jq -r .deliveryId)
+
+echo  "Checking the request status via https://$EXTERNAL_INGEST_FQDN/api/deliveries/$DELIVERY_ID"
 
 curl "https://$EXTERNAL_INGEST_FQDN/api/deliveries/$DELIVERY_ID" --header 'Accept: application/json' -k -i
