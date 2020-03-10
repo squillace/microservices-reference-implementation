@@ -17,13 +17,12 @@ mixins:
   - exec
   - az
   - kubernetes
-  - jq
 
 customActions:
   mspnp.install-app:
     description: "Installs the application on the infrastructure release."
     stateless: false
-    modifies: true 
+    modifies: true
   mnpnp.test-app:
     description: "Tests the application; pass the FQDN from the output value of the instance to the --TEST_FQDN parameter."
     stateless: yes
