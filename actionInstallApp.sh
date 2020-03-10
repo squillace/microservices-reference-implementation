@@ -5,8 +5,6 @@ echo "Gather environment variables from the infrastructure..."
 
 
 export SSH_PUBLIC_KEY_FILE=$1
-#echo "displaying the env vars....."
-#env
 
 
 az login --service-principal --username $SP_APP_ID --password $SP_CLIENT_SECRET --tenant $TENANT_ID >> /dev/null
@@ -88,7 +86,9 @@ export DELIVERY_KEYVAULT_URI=$(az group deployment show -g $RESOURCE_GROUP -n az
 
 # depending on perms, you may need to log in first
 echo "tag=$ACR_SERVER/delivery:0.1.0"
-result=$(az acr repository show -n byem2kjldx646 --repository delivery --query '[registry, imageName]' -o tsv)
+
+result=$(az acr repository show -n $ACR_NAME --repository delivery --query '[registry, imageName]' -o tsv)
+
 if [[ "$result" = "" ]]; then
     az acr build -t $ACR_SERVER/delivery:0.1.0 -r $ACR_NAME $DELIVERY_PATH/.
 else
@@ -141,7 +141,8 @@ export PACKAGE_PATH=$PROJECT_ROOT/src/shipping/package
 
 echo "tag=$ACR_SERVER/package:0.1.0"
 
-result=$(az acr repository show -n byem2kjldx646 --repository package --query '[registry, imageName]' -o tsv)
+result=$(az acr repository show -n $ACR_NAME --repository package --query '[registry, imageName]' -o tsv)
+
 if [[ "$result" = "" ]]; then
     az acr build -t $ACR_SERVER/package:0.1.0 -r $ACR_NAME $PACKAGE_PATH/.
 else
@@ -181,7 +182,8 @@ export WORKFLOW_PATH=$PROJECT_ROOT/src/shipping/workflow
 # Build the Docker image
 
 echo "tag=$ACR_SERVER/workflow:0.1.0"
-result=$(az acr repository show -n byem2kjldx646 --repository workflow --query '[registry, imageName]' -o tsv)
+result=$(az acr repository show -n $ACR_NAME --repository workflow --query '[registry, imageName]' -o tsv)
+
 if [[ "$result" = "" ]]; then
     az acr build -t $ACR_SERVER/workflow:0.1.0 -r $ACR_NAME $WORKFLOW_PATH/.
 else
@@ -229,7 +231,8 @@ export INGESTION_PATH=$PROJECT_ROOT/src/shipping/ingestion
 
 # Build the docker image
 echo "tag=$ACR_SERVER/ingestion:0.1.0"
-result=$(az acr repository show -n byem2kjldx646 --repository ingestion --query '[registry, imageName]' -o tsv)
+result=$(az acr repository show -n $ACR_NAME --repository ingestion --query '[registry, imageName]' -o tsv)
+
 if [[ "$result" = "" ]]; then
     az acr build -t $ACR_SERVER/ingestion:0.1.0 -r $ACR_NAME $INGESTION_PATH/.
 else
@@ -284,7 +287,9 @@ export DRONE_PATH=$PROJECT_ROOT/src/shipping/dronescheduler
 
 # Build the docker image
 echo "tag=$ACR_SERVER/dronescheduler:0.1.0"
-result=$(az acr repository show -n byem2kjldx646 --repository dronescheduler --query '[registry, imageName]' -o tsv)
+
+result=$(az acr repository show -n $ACR_NAME --repository dronescheduler --query '[registry, imageName]' -o tsv)
+
 if [[ "$result" = "" ]]; then
     #az acr build -t byem2kjldx646.azurecr.io/dronescheduler:0.1.0 -r byem2kjldx646 .. -f ./Dockerfile
     az acr build -t $ACR_SERVER/dronescheduler:0.1.0 -r $ACR_NAME $DRONE_PATH/../ -f $DRONE_PATH/Dockerfile
