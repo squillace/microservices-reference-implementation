@@ -3,12 +3,12 @@
 # See https://porter.sh/author-bundles for documentation on how to configure your bundle
 # Uncomment out the sections below to take full advantage of what Porter can do!
 
-name: microservices-reference-infra-basic
+name: microservices-reference-app-basic
 version: 0.2.13
-description: "A bundle to deliver the basic infrastructure portion of the Microsoft Patterns & Practices Microservices Reference Implementation located at https://github.com/mspnp/microservices-reference-implementation . Full documentation for this implementation can be read at https://docs.microsoft.com/azure/architecture/microservices/. This bundle installs the basic infrastructure to host the applications, but does not install the applications. NOTE: You may need more than Contributor scope on your Service Principal, but it depends upon your specific tenant and subscription permissions. The source for this bundle is located at https://github.com/squillace/microservices-reference-implementation."
+description: "A bundle to deliver the basic infrastructure portion of the Microsoft Patterns & Practices Microservices Reference Implementation located at https://github.com/mspnp/microservices-reference-implementation . Full documentation for this implementation can be read at https://docs.microsoft.com/azure/architecture/microservices/. This bundle installs the basic infrastructure to host the applications, but does not install the applications. NOTE: You may need more than Contributor scope on your Service Principal, but it depends upon your specific tenant and subscription permissions. The source for this bundle is located at https://github.com/squillace/microservices-reference-implementation. Thus bundle is built to work with an installation from squillace/mspnp-infra:v0.2.13."
 
-invocationImage: squillace/mspnp-infra-install:v0.2.13
-tag: squillace/mspnp-infra:v0.2.13
+invocationImage: squillace/mspnp-app-install:v0.2.13
+tag: squillace/mspnp-app:v0.2.13
 
 # Uncomment the line below to use a template Dockerfile for your invocation image
 dockerfile: Dockerfile.tmpl
@@ -20,10 +20,6 @@ mixins:
   - jq
 
 customActions:
-  mspnp.install-app:
-    description: "Installs the application on the infrastructure release."
-    stateless: false
-    modifies: true 
   mnpnp.test-app:
     description: "Tests the application; pass the FQDN from the output value of the instance to the --TEST_FQDN parameter."
     stateless: yes
@@ -34,14 +30,12 @@ outputs:
     type: string
     description: "The FQDN of the application."
     applyTo:
-      - mspnp.install-app
-      - mspnp.test-app
+      - install
 
-
-mspnp.install-app:
+install:
   - exec:
       command: bash
-      description: "Deploying the application onto the infrastructure reference implementation....."
+      description: "Deploying the application onto the infrastructure reference implementation..."
       arguments:
         - actionInstallApp.sh 
         - '"{{bundle.credentials.SSH_PUBLIC_KEY_FILE}}"'
@@ -57,18 +51,10 @@ mspnp.install-app:
 mspnp.test-app:
   - exec:
       command: bash
-      description: "Testing the application by calling the endpoints...."
+      description: "Testing the application by calling the endpoints..."
       arguments:
         - test.sh 
         - '"{{bundle.parameters.TEST_FQDN}}"'
-
-install:
-  - exec:
-      command: bash
-      description: "Deploying the infrastructure portions of the reference implementation..."
-      arguments:
-        - collectingPrerequisiteValues.sh 
-        - '"{{bundle.credentials.SSH_PUBLIC_KEY_FILE}}"'
 
 upgrade:
   - exec:
@@ -78,32 +64,12 @@ upgrade:
         c: echo "not yet implemented..."
 
 uninstall:
-  - exec: 
-      description: "Logging in to Azure..."
-      command: "bash"
-      flags:
-        c: '"az login --service-principal --username {{ bundle.credentials.SP_APP_ID}} --password {{ bundle.credentials.SP_CLIENT_SECRET}} --tenant {{ bundle.credentials.TENANT_ID}} >> /dev/null"'
+  - exec:
+      command: bash
+      description: "deleting the helm releases..."
+      arguments:
+        - "deleteReleases.sh"
 
-  - exec: 
-      description: "Azure resource group deployment deletion"
-      command: "az"
-      arguments:
-        - "group" 
-        - "delete" 
-        - "--name"
-        - "{{bundle.parameters.RESOURCE_GROUP}}"
-        - --no-wait
-        - --yes
-  - exec: 
-      description: "Azure resource group deployment deletion"
-      command: "az"
-      arguments:
-        - "group" 
-        - "delete" 
-        - "--name"
-        - "{{bundle.parameters.RESOURCE_GROUP}}-acr"
-        - --no-wait
-        - --yes
 
 # See https://porter.sh/author-bundles/#dependencies
 #dependencies:
