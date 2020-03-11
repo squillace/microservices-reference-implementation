@@ -49,7 +49,7 @@ mspnp.install-app:
       command: "bash"
       description: "Capturing the FQDN..."
       flags:
-        c: '"az group deployment show -g $RESOURCE_GROUP -n azuredeploy-dev --query properties.outputs.appGatewayPublicIpFqdn.value -o tsv"'
+        c: "az group deployment show -g $RESOURCE_GROUP -n azuredeploy-dev --query properties.outputs.appGatewayPublicIpFqdn.value -o tsv"
       outputs:
         - name: EXTERNAL_ENDPOINT
           regex: "(.*)"
