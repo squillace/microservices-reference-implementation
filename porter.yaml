@@ -4,11 +4,11 @@
 # Uncomment out the sections below to take full advantage of what Porter can do!
 
 name: microservices-reference-infra-basic
-version: 0.2.13
+version: 0.2.14
 description: "A bundle to deliver the basic infrastructure portion of the Microsoft Patterns & Practices Microservices Reference Implementation located at https://github.com/mspnp/microservices-reference-implementation . Full documentation for this implementation can be read at https://docs.microsoft.com/azure/architecture/microservices/. This bundle installs the basic infrastructure to host the applications, but does not install the applications. NOTE: You may need more than Contributor scope on your Service Principal, but it depends upon your specific tenant and subscription permissions. The source for this bundle is located at https://github.com/squillace/microservices-reference-implementation."
 
-invocationImage: squillace/mspnp-infra-install:v0.2.13
-tag: squillace/mspnp-infra:v0.2.13
+invocationImage: squillace/mspnp-infra-install:v0.2.14
+tag: squillace/mspnp-infra:v0.2.14
 
 # Uncomment the line below to use a template Dockerfile for your invocation image
 dockerfile: Dockerfile.tmpl
@@ -35,21 +35,19 @@ outputs:
     description: "The FQDN of the application."
     applyTo:
       - mspnp.install-app
-      - mspnp.test-app
-
 
 mspnp.install-app:
   - exec:
       command: bash
       description: "Deploying the application onto the infrastructure reference implementation....."
       arguments:
-        - actionInstallApp.sh 
-        - '"{{bundle.credentials.SSH_PUBLIC_KEY_FILE}}"'
+        - actionInstallApp.sh
+        - "{{ bundle.credentials.SSH_PUBLIC_KEY_FILE }}"
   - exec:
       command: "bash"
       description: "Capturing the FQDN..."
       flags:
-        c: '"az group deployment show -g $RESOURCE_GROUP -n azuredeploy-dev --query properties.outputs.appGatewayPublicIpFqdn.value -o tsv"'
+        c: "az group deployment show -g $RESOURCE_GROUP -n azuredeploy-dev --query properties.outputs.appGatewayPublicIpFqdn.value -o tsv"
       outputs:
         - name: EXTERNAL_ENDPOINT
           regex: "(.*)"
@@ -59,16 +57,16 @@ mspnp.test-app:
       command: bash
       description: "Testing the application by calling the endpoints...."
       arguments:
-        - test.sh 
-        - '"{{bundle.parameters.TEST_FQDN}}"'
+        - test.sh
+        - "{{ bundle.parameters.TEST_FQDN }}"
 
 install:
   - exec:
       command: bash
       description: "Deploying the infrastructure portions of the reference implementation..."
       arguments:
-        - collectingPrerequisiteValues.sh 
-        - '"{{bundle.credentials.SSH_PUBLIC_KEY_FILE}}"'
+        - collectingPrerequisiteValues.sh
+        - "{{ bundle.credentials.SSH_PUBLIC_KEY_FILE }}"
 
 upgrade:
   - exec:
