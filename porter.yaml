@@ -35,8 +35,6 @@ outputs:
     description: "The FQDN of the application."
     applyTo:
       - mspnp.install-app
-      - mspnp.test-app
-
 
 mspnp.install-app:
   - exec:
