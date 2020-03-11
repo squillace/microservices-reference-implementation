@@ -20,9 +20,9 @@ This repository contains a fork of https://github.com/mspnp/microservices-refere
 ## How to use
 
 1. Install https://porter.sh
-2. `porter explain --tag squillace/mspnp-infra:v0.2.13`
-3. Have the credential values you need ready to use, and then `porter creds generate mspnp --tag squillace/mspnp-infra:v0.2.13`.
-4. `porter install --tag squillace/mspnp-infra:v0.2.13 -c mspnp` -- assuming that you used "mspnp" in the command from step 3.
+2. `porter explain --tag squillace/mspnp-infra:v0.2.14`
+3. Have the credential values you need ready to use, and then `porter creds generate mspnp --tag squillace/mspnp-infra:v0.2.14`.
+4. `porter install --tag squillace/mspnp-infra:v0.2.14 -c mspnp` -- assuming that you used "mspnp" in the command from step 3.
 5. When done, `porter invoke --action mspnp.install-app -c mspnp microservices-reference-infra-basic` will build and install the application in this environment.
 6. When that is done, capture the FQDN output from the screen, and type `porter invoke --action mspnp.test-app -c mspnp microservices-reference-infra-basic --param TEST_FQDN=<your FQDN value>`
 
