@@ -3,15 +3,26 @@
 # See https://porter.sh/author-bundles for documentation on how to configure your bundle
 # Uncomment out the sections below to take full advantage of what Porter can do!
 
+<<<<<<< HEAD
 name: microservices-reference-app-basic
 version: 0.2.14
 description: "A bundle to deliver the basic infrastructure portion of the Microsoft Patterns & Practices Microservices Reference Implementation located at https://github.com/mspnp/microservices-reference-implementation . Full documentation for this implementation can be read at https://docs.microsoft.com/azure/architecture/microservices/. This bundle installs the basic infrastructure to host the applications, but does not install the applications. NOTE: You may need more than Contributor scope on your Service Principal, but it depends upon your specific tenant and subscription permissions. The source for this bundle is located at https://github.com/squillace/microservices-reference-implementation. Thus bundle is built to work with an installation from squillace/mspnp-infra:v0.2.14."
 
 invocationImage: squillace/mspnp-app-install:v0.2.14
 tag: squillace/mspnp-app:v0.2.14
+=======
+name: microservices-reference-infra-basic
+version: 0.2.14
+description: "A bundle to deliver the basic infrastructure portion of the Microsoft Patterns & Practices Microservices Reference Implementation located at https://github.com/mspnp/microservices-reference-implementation . Full documentation for this implementation can be read at https://docs.microsoft.com/azure/architecture/microservices/. This bundle installs the basic infrastructure to host the applications, but does not install the applications. NOTE: You may need more than Contributor scope on your Service Principal, but it depends upon your specific tenant and subscription permissions. The source for this bundle is located at https://github.com/squillace/microservices-reference-implementation."
+
+invocationImage: squillace/mspnp-infra-install:v0.2.14
+tag: squillace/mspnp-infra:v0.2.14
+>>>>>>> finished the working bundle
 
 # Uncomment the line below to use a template Dockerfile for your invocation image
 dockerfile: Dockerfile.tmpl
+
+
 
 mixins:
   - exec
@@ -89,11 +100,7 @@ parameters:
     type: string
     description: "The resource group that will control the resources."
     default: mspnp-ref-impl
-  - name: TEST_FQDN
-    type: string
-    description: "The FQDN of the application."
-    applyTo:
-      - mspnp.test-app
+
 
 credentials:
 #  - name: kubeconfig
