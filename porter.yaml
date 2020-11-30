@@ -13,6 +13,8 @@ tag: squillace/mspnp-app:v0.2.14
 # Uncomment the line below to use a template Dockerfile for your invocation image
 dockerfile: Dockerfile.tmpl
 
+
+
 mixins:
   - exec
   - az
@@ -89,11 +91,7 @@ parameters:
     type: string
     description: "The resource group that will control the resources."
     default: mspnp-ref-impl
-  - name: TEST_FQDN
-    type: string
-    description: "The FQDN of the application."
-    applyTo:
-      - mspnp.test-app
+
 
 credentials:
 #  - name: kubeconfig
