@@ -21,6 +21,7 @@ curl -X POST "https://$EXTERNAL_INGEST_FQDN/api/deliveryrequests" --header 'Cont
  }' > deliveryrequest.json
 
 DELIVERY_ID=$(cat deliveryrequest.json | jq -r .deliveryId)
+#echo "$DELIVERY_ID"
 echo 
 echo
 sleep 5
